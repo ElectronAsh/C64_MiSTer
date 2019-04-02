@@ -174,7 +174,9 @@ always @(posedge clk_sys) begin
 	ntsc_2 <= ntsc_1;
 	
 	if (!reset_n) begin
-		cfg_state <= 2'd0;
+		cfg_state <= 2'd1;			// Force an update on reset!
+											// (if PAL mode is already set in the OSD, then the PLL setting won't get written unless it's toggled again.) ElectronAsh.
+		
 		core_cfg_write <= 1'b0;
 	end
 
