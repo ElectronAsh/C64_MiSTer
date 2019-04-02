@@ -187,24 +187,16 @@ always @(posedge clk_sys) begin
 	
 	1: if (!core_cfg_waitrequest) begin
 		if (data_index<DATA_COUNT) begin
+			core_cfg_write <= 1'b1;
 			cfg_state <= cfg_state + 1'b1;
 		end
 		else cfg_state <= 2'd0;
 	end
 	
 	2: begin
-		core_cfg_write <= 1'b1;
-		cfg_state <= cfg_state + 1'b1;
-	end
-	
-	3: begin
 		core_cfg_write <= 1'b0;
-		cfg_state <= cfg_state + 1'b1;
-	end
-
-	4: begin
 		data_index <= data_index + 1;
-		cfg_state <= 2'd1;	// Loop back.
+		cfg_state <= cfg_state - 1'b1;	// Loop back.
 	end
 	
 	endcase
