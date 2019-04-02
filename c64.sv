@@ -163,20 +163,66 @@ wire pll_locked;
 wire clk_sys;
 wire clk64;
 
+wire [63:0] core_reconfig_to_pll;
+wire [63:0] core_reconfig_from_pll;
+
 pll pll
 (
 	.refclk(CLK_50M),
 	.outclk_0(clk64),
 	.outclk_1(SDRAM_CLK),
 	.outclk_2(clk_sys),
-	.locked(pll_locked)
+	.locked(pll_locked),
+	
+	.reconfig_to_pll(core_reconfig_to_pll),
+	.reconfig_from_pll(core_reconfig_from_pll)
 );
+
+
+wire core_cfg_waitrequest;
+wire core_cfg_write;
+wire [5:0] core_cfg_address;
+wire [31:0] core_cfg_data;
+wire core_cfg_running;
+
+pll_reconfig	pll_reconfig
+(
+	.mgmt_clk(CLK_50M),
+	.mgmt_reset(RESET),
+	
+	.mgmt_waitrequest(core_cfg_waitrequest),
+	.mgmt_read(0),
+	.mgmt_readdata(),
+	.mgmt_write(core_cfg_write),
+	.mgmt_address(core_cfg_address),
+	.mgmt_writedata(core_cfg_data),
+	
+	.reconfig_to_pll(core_reconfig_to_pll),
+	.reconfig_from_pll(core_reconfig_from_pll)
+);
+
+
+pll_core_adj pll_core_adj (
+	.clk_sys( CLK_50M ),		// input clk_sys
+	.reset_n( !RESET ),		// input reset_n
+
+	.ntsc( ntsc ),				// input ntsc
+
+	.core_cfg_waitrequest( core_cfg_waitrequest ),	// input core_cfg_waitrequest
+	.core_cfg_write( core_cfg_write ),		// output core_cfg_write
+	.core_cfg_address( core_cfg_address ),	// output [5:0] core_cfg_address
+	.core_cfg_data( core_cfg_data ),			// output [31:0] core_cfg_data
+	
+	.core_cfg_running( core_cfg_running )
+);
+
+
 
 reg reset_n;
 always @(posedge clk_sys) begin
 	integer reset_counter;
 
-	if (status[0] | buttons[1] | !pll_locked) begin
+	if (status[0] | buttons[1] | !pll_locked | core_cfg_running) begin
 		reset_counter <= 100000;
 		reset_n <= 0;
 	end
