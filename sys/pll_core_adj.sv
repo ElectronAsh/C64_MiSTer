@@ -2,8 +2,8 @@
 //
 //
 module pll_core_adj (
-	input wire clk_sys,
-	input wire reset_n,
+	input wire mgmt_clk,
+	input wire reset,
 
 	input wire ntsc,
 
@@ -169,16 +169,16 @@ reg ntsc_1, ntsc_2;
 reg [1:0] cfg_state;
 reg [5:0] data_index;
 
-always @(posedge clk_sys) begin
+always @(posedge mgmt_clk or posedge reset)
+if (reset) begin
+	cfg_state <= 2'd1;		// Force an update on reset / power-up!
+									// (if PAL mode is already set in the OSD, then the PLL setting won't get written unless it's toggled again.) ElectronAsh.
+	data_index <= 6'd0;
+	core_cfg_write <= 1'b0;
+end
+else begin
 	ntsc_1 <= ntsc;
 	ntsc_2 <= ntsc_1;
-	
-	if (!reset_n) begin
-		cfg_state <= 2'd1;			// Force an update on reset!
-											// (if PAL mode is already set in the OSD, then the PLL setting won't get written unless it's toggled again.) ElectronAsh.
-		
-		core_cfg_write <= 1'b0;
-	end
 
 
 	case (cfg_state)

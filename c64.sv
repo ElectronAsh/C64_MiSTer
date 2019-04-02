@@ -203,8 +203,8 @@ pll_reconfig	pll_reconfig
 
 
 pll_core_adj pll_core_adj (
-	.clk_sys( CLK_50M ),		// input clk_sys
-	.reset_n( !RESET ),		// input reset_n
+	.mgmt_clk( CLK_50M ),	// input mgmt_clk
+	.reset( RESET ),			// input reset_n
 
 	.ntsc( ntsc ),				// input ntsc
 
